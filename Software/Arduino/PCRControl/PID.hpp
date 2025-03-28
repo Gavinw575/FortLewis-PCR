@@ -42,60 +42,45 @@
 //   }
 // };
 
-#include <Arduino.h>
-// a stripped down simple PID controller for debugging purposes
-struct TuningStruct{
-  float kp;
-  float ki;
-  float kd;
-};
+class PID {
+  private:
+    double kp, ki, kd;
+    unsigned long currentTime, lastTime;
+    double pError, lError, iError, dError;
+    double iErrorLimit = 50;  // Adjusted integral windup limit
 
-class PID{
-private:
-float kp;
-float ki;
-float kd;
-int highClamp;
-int lowClamp;
-float error=0, previousError = 0;
-float P,I,D;
-int output =0;
+  public:
+    PID(double proportionalGain = 1, double integralGain = 0, double derivativeGain = 0) {
+      kp = proportionalGain;
+      ki = integralGain;
+      kd = derivativeGain;
+      lastTime = micros();
+    }
 
+    void reset() {
+      iError = 0;
+    }
 
-public:
-PID (TuningStruct tuning, int minOutput, int maxOutput){
-  highClamp = maxOutput;
-  lowClamp = minOutput;
-  kp = tuning.kp;
-  ki = tuning.ki;
-  kd = tuning.kd;
-}
+    double calculate(double currentTemp, double targetTemp) {
+      currentTime = micros();
+      double deltaTime = (currentTime - lastTime) / 1000000.0; // Convert to seconds
 
+      if (deltaTime <= 0) return 0; // Prevent division by zero
 
-// function to calculate the PID stuff
-int calculate(double targetTemp, double currentTemp){
-  error = (targetTemp)-currentTemp;
-  P = error;
-  I +=error;
-  D = error-previousError;
-  previousError=error;
-  float rawOutput = kp*P+ki*I+kd*D;
-  if (rawOutput > highClamp) {
-    rawOutput = highClamp;
-  } else if (rawOutput < lowClamp) {
-    rawOutput = lowClamp;
-  }
-    // Anti-windup: only integrate if the output is not at the bounds
-  if (rawOutput >= highClamp || rawOutput <= lowClamp) {
-      I -= error;
-  }
-  output = static_cast<int>(rawOutput);
-  return output;
-}
-void reset(){
-  P=0;
-  I=0;
-  D=0;
-}
+      lError = pError;
+      pError = targetTemp - currentTemp;
 
+      // Prevent integral windup
+      iError += pError * deltaTime;
+      iError = constrain(iError, -iErrorLimit, iErrorLimit);
+
+      dError = (pError - lError) / deltaTime;
+
+      lastTime = currentTime;
+      return kp * pError + ki * iError + kd * dError;
+    }
+
+    void setKp(float value) { kp = value; }
+    void setKi(float value) { ki = value; }
+    void setKd(float value) { kd = value; }
 };
