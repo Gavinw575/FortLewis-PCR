@@ -15,6 +15,7 @@ const int LidP = A1; // pin for thermal resistor conneccted to lid
 const int cPin = A2; // for curent recording
 const int ssr = 9; // solid state relay signal
 
+
 bool pPower = false; // software pielter on/off
 bool lPower = false; // software lid on/off
 //bool fanState = true; // fan starts ON
@@ -44,7 +45,7 @@ TemperatureSensor peltierT(thermP);
 TemperatureSensor LidT(LidP); // JD setup for thermo resistor temp
 
 // setup pieltier PID
-PID peltierPID(4, 0.01, 6);
+PID peltierPID(5, 2, .5);
 
 void setup() {
   // setup serial
@@ -170,13 +171,13 @@ void loop() {
   avgPTemp = ((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
   double error = targetPeltierTemp - avgPTemp;
   if (targetPeltierTemp < 70) {
-    peltierPID.setKp(14);
-    peltierPID.setKi(0.1);
-    peltierPID.setKd(6);
+    peltierPID.setKp(5);
+    peltierPID.setKi(2);
+    peltierPID.setKd(.5);
   } else {
-    peltierPID.setKp(8);
-    peltierPID.setKi(0.05);
-    peltierPID.setKd(6);
+    peltierPID.setKp(5);
+    peltierPID.setKi(2);
+    peltierPID.setKd(.5);
   }
 
   peltierPWM = peltierPID.calculate(avgPTemp, targetPeltierTemp); // calculate pid and set to output
@@ -211,7 +212,7 @@ void loop() {
 
   // lid controll
   if (lPower) {
-    if(currentLidTemp < 70){
+    if(currentLidTemp < 110){
       digitalWrite(ssr, HIGH);
     } else {
       digitalWrite(ssr, LOW);
@@ -220,7 +221,7 @@ void loop() {
     digitalWrite(ssr, LOW);
   }
  
-  // pieltier control
+  
   if (!pPower || currentPeltierTemp > 150) { // pieltiers on, shut down if over 150C
     digitalWrite(inA, LOW);
     digitalWrite(inB, LOW);
@@ -232,13 +233,15 @@ void loop() {
   } else { // pieltiers on
     // convert pieltierDelta to pwm, inA, inB
     analogWrite(ppwm, abs(peltierPWM));
-    analogWrite(fpwm, 255);
     if (peltierPWM > 0) {
       digitalWrite(inA, HIGH);
       digitalWrite(inB, LOW);
+      analogWrite(fpwm, 0); // Fan OFF
     } else {
       digitalWrite(inA, LOW);
       digitalWrite(inB, HIGH);
+      analogWrite(fpwm, 255); // Full fan speed
+
     }
   }
 }
