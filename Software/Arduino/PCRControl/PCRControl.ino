@@ -1,8 +1,5 @@
-
 #include "TemperatureSensor.hpp"
 #include "PID.hpp"
-#include "RampPID.hpp"
-#include "HardcodedThreeStepPID.hpp"
 
 #include <math.h>
 
@@ -20,6 +17,8 @@ const int ssr = 9; // solid state relay signal
 
 bool pPower = false; // software pielter on/off
 bool lPower = false; // software lid on/off
+//bool fanState = true; // fan starts ON
+
 
 bool verboseState = false; // spam serial with state every loop?
 bool verbosePID = false;  // spam serial with target and curent temperature?
@@ -29,7 +28,7 @@ int limitPWMH = 255;
 int limitPWMC = 255;
 
 float avgPTemp = 0; // last average for peltier temperature
-int avgPTempSampleSize = 100; // sample size for peltier temperature moving average
+int avgPTempSampleSize = 50; // sample size for peltier temperature moving average
 
 float avgPPWM = 0; // last average for peltier temperature
 int avgPPWMSampleSize = 2; // sample size for peltier temperature moving average was 4
@@ -37,15 +36,15 @@ int avgPPWMSampleSize = 2; // sample size for peltier temperature moving average
 double targetPeltierTemp = 29; // the tempature the system will try to move to, in degrees C
 double currentPeltierTemp; // the tempature curently read from the thermoristor connected to thermP, in degrees C
 
-double currentLidTemp; 
+double currentLidTemp;
 double LastLidTemp;
 
 // setup pieltier tempature sensor
 TemperatureSensor peltierT(thermP);
-TemperatureSensor LidT(LidP); // JD setup for thermo resistor temp 
+TemperatureSensor LidT(LidP); // JD setup for thermo resistor temp
 
 // setup pieltier PID
-PID peltierPID(10, 0.01, 1000000);
+PID peltierPID(4, 0.01, 6);
 
 void setup() {
   // setup serial
@@ -155,8 +154,8 @@ void handleSerialInput() {
 void loop() {
   handleSerialInput();
 
-  currentLidTemp = LidT.getTemp(); // read lid temp
-  currentPeltierTemp = peltierT.getTemp(); // read pieltier temp
+  currentLidTemp = LidT.getTemp(70); // read lid temp
+  currentPeltierTemp = peltierT.getTemp(targetPeltierTemp); // read pieltier temp
   if (isnan(currentPeltierTemp) || isinf(currentPeltierTemp)) { // reset nan and inf values
     currentPeltierTemp = avgPTemp;
   }
@@ -166,10 +165,26 @@ void loop() {
   //currentPeltierTemp = 0.6075525829531135 * currentPeltierTemp + 15.615801552818361; // seccond estimate
 
   // 3/2/2021 temperature calabration
-  currentPeltierTemp = 1.1201 * currentPeltierTemp - 3.32051;
-  
+  currentPeltierTemp = currentPeltierTemp + 2 ;
+ 
   avgPTemp = ((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
+  double error = targetPeltierTemp - avgPTemp;
+  if (targetPeltierTemp < 70) {
+    peltierPID.setKp(14);
+    peltierPID.setKi(0.1);
+    peltierPID.setKd(6);
+  } else {
+    peltierPID.setKp(8);
+    peltierPID.setKi(0.05);
+    peltierPID.setKd(6);
+  }
+
   peltierPWM = peltierPID.calculate(avgPTemp, targetPeltierTemp); // calculate pid and set to output
+
+  if (error > 0.5 && error < 8  && avgPTemp > 80) {
+    peltierPWM += 60;  // force a push to get over the hump
+  }
+
   peltierPWM = min(limitPWMH, max(-limitPWMC, peltierPWM)); // clamp output between -255 and 255
   if (isnan(peltierPWM ) || isinf(peltierPWM )) { // reset nan and inf values
     peltierPWM = avgPPWM;
@@ -196,7 +211,7 @@ void loop() {
 
   // lid controll
   if (lPower) {
-    if(currentLidTemp < 70){ 
+    if(currentLidTemp < 70){
       digitalWrite(ssr, HIGH);
     } else {
       digitalWrite(ssr, LOW);
@@ -204,7 +219,7 @@ void loop() {
   } else {
     digitalWrite(ssr, LOW);
   }
-  
+ 
   // pieltier control
   if (!pPower || currentPeltierTemp > 150) { // pieltiers on, shut down if over 150C
     digitalWrite(inA, LOW);
@@ -227,3 +242,4 @@ void loop() {
     }
   }
 }
+
