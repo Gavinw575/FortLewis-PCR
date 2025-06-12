@@ -39,29 +39,31 @@ PCRSerial::PCRSerial (std::string path)  {
   PWM_ = 0;
 }
 
+
+
+// Trying new Temperature updating speed for PID controll
 void PCRSerial::start () {
   loop_ = true;
   while (loop_) {
-    if (!commandBuffer_.empty()) { // send command
+    if (!commandBuffer_.empty()) {
       writeSerial(commandBuffer_.front());
       commandBuffer_.pop();
-      sleep(2);
-    } else { // check temperature
+      usleep(100 * 1000); // 100 ms
+    } else {
       writeSerial("d\n");
-      sleep(1);
+      usleep(50 * 1000);  // 50 ms
 
       std::string data = readSerial();
 
       if (log_) {
-      	logFile_ << targetTemperature_ << " " << data; 
+        logFile_ << targetTemperature_ << " " << data; 
       }
-      
+
       std::stringstream serialStringStream(data);
-      
       std::string word;
       serialStringStream >> word;
       if (word != "") {
-      	peltierTemperature_ = std::stof(word);
+        peltierTemperature_ = std::stof(word);
       }
       serialStringStream >> word;
       if (word != "") {
@@ -70,14 +72,55 @@ void PCRSerial::start () {
       serialStringStream >> word;
       if (word != "") {
         lidTemperature_ = std::stof(word);
-      } 
-      sleep(1);
+      }
+
+      usleep(50 * 1000);  // another 50 ms before next loop
     }
   }
 }
 
+// void PCRSerial::start () {
+//   loop_ = true;
+//   while (loop_) {
+//     if (!commandBuffer_.empty()) { // send command
+//       writeSerial(commandBuffer_.front());
+//       commandBuffer_.pop();
+//       sleep(2);
+//     } else { // check temperature
+//       writeSerial("d\n");
+//       sleep(1);
+
+//       std::string data = readSerial();
+
+//       if (log_) {
+//       	logFile_ << targetTemperature_ << " " << data; 
+//       }
+      
+//       std::stringstream serialStringStream(data);
+      
+//       std::string word;
+//       serialStringStream >> word;
+//       if (word != "") {
+//       	peltierTemperature_ = std::stof(word);
+//       }
+//       serialStringStream >> word;
+//       if (word != "") {
+//         PWM_ = std::stof(word);
+//       }
+//       serialStringStream >> word;
+//       if (word != "") {
+//         lidTemperature_ = std::stof(word);
+//       } 
+//       sleep(1);
+//     }
+//   }
+// }
+
+//Hopeful fix to data sending over serial port
 void PCRSerial::writeSerial (std::string message) {
-  write(serialPort_, message.c_str(), sizeof(message.c_str()));
+  write(serialPort_, message.c_str(), message.size());
+
+  //write(serialPort_, message.c_str(), sizeof(message.c_str()));
 }
 
 std::string PCRSerial::readSerial () {
