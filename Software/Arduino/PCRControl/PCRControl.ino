@@ -28,7 +28,7 @@ double peltierPWM = 0; // the PWM signal * curent direction to be sent to curent
 int limitPWMH = 255;
 int limitPWMC = 255;
 
-float avgPTemp = 0; // last average for peltier temperature
+float avgPTemp = 5; // last average for peltier temperature
 int avgPTempSampleSize = 100; // sample size for peltier temperature moving average
 
 float avgPPWM = 0; // last average for peltier temperature
@@ -168,8 +168,9 @@ currentPeltierTemp = 0.6075525829531135 * currentPeltierTemp + 15.61580155281836
 // 3/2/2021 temperature calabration
 //currentPeltierTemp = 1.1201 * currentPeltierTemp - 3.32051;
 
-avgPTemp = ((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
-peltierPWM = peltierPID.calculate(currentPeltierTemp, targetPeltierTemp); // calculate pid and set to output //changed from abgPTemp to Current peltier temp
+avgPTemp = currentPeltierTemp 
+  //((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
+peltierPWM = peltierPID.calculate(avgPTemp, targetPeltierTemp); // calculate pid and set to output //changed from abgPTemp to Current peltier temp
 peltierPWM = min(limitPWMH, max(-limitPWMC, peltierPWM)); // clamp output between -255 and 255
 if (isnan(peltierPWM ) || isinf(peltierPWM )) { // reset nan and inf values
 peltierPWM = avgPPWM;
