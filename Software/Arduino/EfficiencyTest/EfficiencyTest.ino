@@ -10,7 +10,8 @@ bool power = false; // software on/off
 double peltierPWM = 0; // the PWM signal * curent direction to be sent to curent drivers for peltier
 
 float avgPTemp = 0; // last average for peltier temperature
-int avgPTempSampleSize = 10; // sample size for peltier temperature moving average
+int avgPTempSampleSize = 3; //Changed from 10 to 3 for faster repsonce time
+// sample size for peltier temperature moving average
 
 double targetPeltierTemp = 30; // the tempature the system will try to move to, in degrees C
 double currentPeltierTemp; // the tempature curently read from the thermoristor connected to thermP, in degrees C
