@@ -169,7 +169,7 @@ currentPeltierTemp = avgPTemp;
 currentPeltierTemp = 1.1201 * currentPeltierTemp - 3.32051;
 
 avgPTemp = ((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
-peltierPWM = peltierPID.calculate(avgPTemp, targetPeltierTemp); // calculate pid and set to output
+peltierPWM = peltierPID.calculate(currentPeltierTemp, targetPeltierTemp); // calculate pid and set to output //changed from abgPTemp to Current peltier temp
 peltierPWM = min(limitPWMH, max(-limitPWMC, peltierPWM)); // clamp output between -255 and 255
 if (isnan(peltierPWM ) || isinf(peltierPWM )) { // reset nan and inf values
 peltierPWM = avgPPWM;
