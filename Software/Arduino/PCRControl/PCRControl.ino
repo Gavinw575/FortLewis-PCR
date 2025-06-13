@@ -163,10 +163,10 @@ currentPeltierTemp = avgPTemp;
 
 // old temperature calibration
 //currentPeltierTemp = 0.9090590064070043 * currentPeltierTemp + 3.725848396176527; // estimate vial temperature
-//currentPeltierTemp = 0.6075525829531135 * currentPeltierTemp + 15.615801552818361; // seccond estimate
+currentPeltierTemp = 0.6075525829531135 * currentPeltierTemp + 15.615801552818361; // seccond estimate
 
 // 3/2/2021 temperature calabration
-currentPeltierTemp = 1.1201 * currentPeltierTemp - 3.32051;
+//currentPeltierTemp = 1.1201 * currentPeltierTemp - 3.32051;
 
 avgPTemp = ((avgPTempSampleSize - 1) * avgPTemp + currentPeltierTemp) / avgPTempSampleSize; // average
 peltierPWM = peltierPID.calculate(currentPeltierTemp, targetPeltierTemp); // calculate pid and set to output //changed from abgPTemp to Current peltier temp
