@@ -251,7 +251,7 @@ class ExperimentEditor {
     void updateStep () {
       
       // check temperature
-      if (2 > std::abs(serial.getPeltierTemperature() - std::stof(targetTemperature_.getText()))) {
+      if (0.5 > std::abs(serial.getPeltierTemperature() - std::stof(targetTemperature_.getText()))) {
       	atTemperature_ = true;
       }
       currentTemperature_.setText(std::to_string((int)serial.getPeltierTemperature()) + "\xb0" + "C");
