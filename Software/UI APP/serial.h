@@ -22,9 +22,6 @@ class PCRSerial {
     float getPeltierTemperature ();
     float getLidTemperature ();
     int getPWM ();
-    // float getIntegral ();
-    // float getDerivative ();
-    // float getError ();
     
     void setDataLog (bool);
     void setPower (bool);
@@ -40,7 +37,6 @@ class PCRSerial {
     bool loop_;
     float targetTemperature_, peltierTemperature_, lidTemperature_;
     int PWM_;
-    //float error_, integral_, derivative_;
     
     bool log_;
     std::ofstream logFile_;
