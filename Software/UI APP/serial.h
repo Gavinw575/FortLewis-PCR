@@ -22,8 +22,9 @@ class PCRSerial {
     float getPeltierTemperature ();
     float getLidTemperature ();
     int getPWM ();
-    float getIntegral
-    float getDerivative
+    float getIntegral ();
+    float getDerivative ();
+    float getError ();
     
     void setDataLog (bool);
     void setPower (bool);
