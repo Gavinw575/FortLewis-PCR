@@ -48,10 +48,10 @@ void PCRSerial::start () {
     if (!commandBuffer_.empty()) {
       writeSerial(commandBuffer_.front());
       commandBuffer_.pop();
-      usleep(100 * 1000); // 100 ms
+      //usleep(100 * 1000); // 100 ms
     } else {
       writeSerial("d\n");
-      usleep(50 * 1000);  // 50 ms
+      //usleep(50 * 1000);  // 50 ms
 
       std::string data = readSerial();
 
@@ -74,7 +74,7 @@ void PCRSerial::start () {
         lidTemperature_ = std::stof(word);
       }
 
-      usleep(50 * 1000);  // another 50 ms before next loop
+      //usleep(50 * 1000);  // another 50 ms before next loop
     }
   }
 }
