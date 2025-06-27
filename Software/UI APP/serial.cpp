@@ -162,17 +162,17 @@ int PCRSerial::getPWM () {
   return PWM_;
 }
 
-float PCRSerial::getError () {
-  return error_;
-}
+// float PCRSerial::getError () {
+//   return error_;
+// }
 
-float PCRSerial::getIntegral () {
-  return integral_;
-}
+// float PCRSerial::getIntegral () {
+//   return integral_;
+// }
 
-float PCRSerial::getDerivative () {
-  return derivative;
-}
+// float PCRSerial::getDerivative () {
+//   return derivative;
+// }
 void PCRSerial::setDataLog (bool state) {
   log_ = state;
   if (log_) {
