@@ -37,6 +37,9 @@ PCRSerial::PCRSerial (std::string path)  {
   peltierTemperature_ = 0;
   lidTemperature_ = 0;
   PWM_ = 0;
+  error_ = 0;
+  derivative_ = 0;
+  integral_ = 0
 }
 
 
@@ -48,10 +51,10 @@ void PCRSerial::start () {
     if (!commandBuffer_.empty()) {
       writeSerial(commandBuffer_.front());
       commandBuffer_.pop();
-      //usleep(100 * 1000); // 100 ms
+      usleep(100 * 1000); // 100 ms
     } else {
       writeSerial("d\n");
-      //usleep(50 * 1000);  // 50 ms
+      usleep(50 * 1000);  // 50 ms
 
       std::string data = readSerial();
 
@@ -73,6 +76,19 @@ void PCRSerial::start () {
       if (word != "") {
         lidTemperature_ = std::stof(word);
       }
+      serialStringStream >> word;
+      if (word != "") {
+        error_ = std::stof(word); // Store error
+      }
+      serialStringStream >> word;
+      if (word != "") {
+        integral_ = std::stof(word); // Store integral
+      }
+      serialStringStream >> word;
+      if (word != "") {
+        derivative_ = std::stof(word); // Store derivative
+      }
+      usleep(50 * 1000);
 
       //usleep(50 * 1000);  // another 50 ms before next loop
     }
@@ -146,6 +162,17 @@ int PCRSerial::getPWM () {
   return PWM_;
 }
 
+float PCRSerial::getError () {
+  return error_;
+}
+
+float PCRSerial::getIntegral () {
+  return integral_;
+}
+
+float PCRSerial::getDerivative () {
+  return derivative;
+}
 void PCRSerial::setDataLog (bool state) {
   log_ = state;
   if (log_) {
