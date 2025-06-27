@@ -39,7 +39,7 @@ PCRSerial::PCRSerial (std::string path)  {
   PWM_ = 0;
   error_ = 0;
   derivative_ = 0;
-  integral_ = 0
+  integral_ = 0;
 }
 
 
