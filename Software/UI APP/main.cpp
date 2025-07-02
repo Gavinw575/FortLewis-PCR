@@ -248,12 +248,26 @@ class ExperimentEditor {
     }
 
     // check if an update to plc temperature is readdy
-    void updateStep () {
-      
-      // check temperature
-      if (0 >= std::abs(serial.getPeltierTemperature() - std::stof(targetTemperature_.getText()))) {
-      	atTemperature_ = true;
-      }
+    void updateStep ()
+    // Use a tolerance for temperature comparison
+    const float TEMPERATURE_TOLERANCE = 0.5f;
+    float currentTemp = serial.getPeltierTemperature();
+    float targetTemp = std::stof(targetTemperature_.getText());
+    
+    // Check if temperature is within tolerance
+    if (std::abs(currentTemp - targetTemp) <= TEMPERATURE_TOLERANCE) {
+        if (!atTemperature_) {
+            atTemperature_ = true;
+            // gettimeofday(&stepStartTime_, NULL); // Start timer when entering range
+            // timerStarted_ = true;
+        }
+    } else {
+        atTemperature_ = false;
+        // timerStarted_ = false; // Reset timer if out of range
+    }
+      // if (0 >= std::abs(serial.getPeltierTemperature() - std::stof(targetTemperature_.getText()))) {
+      // 	atTemperature_ = true;
+      // }
       currentTemperature_.setText(std::to_string((int)serial.getPeltierTemperature()) + "\xb0" + "C");
       
       // start timer if just reachedtemperature
